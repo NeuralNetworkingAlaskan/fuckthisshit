@@ -31,6 +31,9 @@ Agent Zero → IPC Factory → [Mock IPC | Legacy RFC | gRPC IPC] → Function E
 | `AGENT_ZERO_USE_GRPC` | `false` | Use gRPC instead of legacy RFC (Phase 2) |
 | `AGENT_ZERO_GRPC_HOST` | `localhost` | gRPC server host (Phase 2) |
 | `AGENT_ZERO_GRPC_PORT` | `50051` | gRPC server port (Phase 2) |
+| `AGENT_ZERO_GRPC_CERT` | *(empty)* | TLS certificate path |
+| `AGENT_ZERO_GRPC_KEY` | *(empty)* | TLS private key path |
+| `AGENT_ZERO_GRPC_ROOT_CERT` | *(empty)* | Root CA for client auth |
 | `AGENT_ZERO_RFC_HOST` | `localhost` | RFC server host (legacy) |
 | `AGENT_ZERO_RFC_PORT` | `55080` | RFC server port (legacy) |
 | `AGENT_ZERO_FALLBACK_LOCAL` | `true` | Fallback to local execution on IPC failure |

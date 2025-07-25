@@ -612,9 +612,29 @@ class GRPCServerManager:
         agent_zero_pb2_grpc.add_AgentZeroServiceServicer_to_server(self.servicer, self.server)
         
         listen_addr = f"{self.host}:{self.port}"
-        self.server.add_insecure_port(listen_addr)
-        
-        logger.info(f"Starting Agent Zero gRPC server on {listen_addr}")
+        cert = FeatureFlags.get_grpc_cert()
+        key = FeatureFlags.get_grpc_key()
+
+        if cert and key:
+            with open(cert, 'rb') as f:
+                certificate_chain = f.read()
+            with open(key, 'rb') as f:
+                private_key = f.read()
+            root_cert = FeatureFlags.get_grpc_root_cert()
+            root_bytes = None
+            if root_cert:
+                with open(root_cert, 'rb') as f:
+                    root_bytes = f.read()
+            server_credentials = grpc.ssl_server_credentials(
+                [(private_key, certificate_chain)],
+                root_certificates=root_bytes,
+                require_client_auth=bool(root_bytes),
+            )
+            self.server.add_secure_port(listen_addr, server_credentials)
+            logger.info(f"Starting secure Agent Zero gRPC server on {listen_addr}")
+        else:
+            self.server.add_insecure_port(listen_addr)
+            logger.info(f"Starting Agent Zero gRPC server on {listen_addr}")
         await self.server.start()
         
         logger.info("Agent Zero gRPC server started successfully")
