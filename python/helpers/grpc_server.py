@@ -612,7 +612,18 @@ class GRPCServerManager:
         agent_zero_pb2_grpc.add_AgentZeroServiceServicer_to_server(self.servicer, self.server)
         
         listen_addr = f"{self.host}:{self.port}"
-        self.server.add_insecure_port(listen_addr)
+        if FeatureFlags.use_grpc_tls():
+            cert_file = FeatureFlags.get_grpc_cert()
+            key_file = FeatureFlags.get_grpc_key()
+            if cert_file and key_file and os.path.exists(cert_file) and os.path.exists(key_file):
+                with open(cert_file, 'rb') as cf, open(key_file, 'rb') as kf:
+                    creds = grpc.ssl_server_credentials([(kf.read(), cf.read())])
+                self.server.add_secure_port(listen_addr, creds)
+            else:
+                logger.warning("TLS requested but certificate or key missing; using insecure connection")
+                self.server.add_insecure_port(listen_addr)
+        else:
+            self.server.add_insecure_port(listen_addr)
         
         logger.info(f"Starting Agent Zero gRPC server on {listen_addr}")
         await self.server.start()
@@ -640,6 +651,8 @@ async def run_grpc_server():
     port = int(os.environ.get('AGENT_ZERO_GRPC_PORT', '50051'))
     
     manager = GRPCServerManager(host, port)
+    if FeatureFlags.use_grpc_tls():
+        logger.info("gRPC TLS mode enabled")
     
     try:
         await manager.start_server()

@@ -32,7 +32,8 @@ class GRPCAgentZeroIPC(AbstractAgentZeroIPC):
         self.connection_attempts = 0
         self.last_connection_attempt = 0
         
-        logger.info(f"Initialized gRPC IPC client for {host}:{port}")
+        mode = "TLS" if FeatureFlags.use_grpc_tls() else "insecure"
+        logger.info(f"Initialized gRPC IPC client for {host}:{port} ({mode})")
         self._ensure_connection()
     
     def _ensure_connection(self):
@@ -48,7 +49,17 @@ class GRPCAgentZeroIPC(AbstractAgentZeroIPC):
         
         try:
             if self.channel is None:
-                self.channel = grpc.aio.insecure_channel(f"{self.host}:{self.port}")
+                if FeatureFlags.use_grpc_tls():
+                    root_cert = None
+                    root_path = FeatureFlags.get_grpc_root_cert()
+                    if root_path:
+                        with open(root_path, 'rb') as f:
+                            root_cert = f.read()
+                    credentials = grpc.ssl_channel_credentials(root_certificates=root_cert)
+                    self.channel = grpc.aio.secure_channel(f"{self.host}:{self.port}", credentials)
+                else:
+                    self.channel = grpc.aio.insecure_channel(f"{self.host}:{self.port}")
+
                 self.stub = agent_zero_pb2_grpc.AgentZeroServiceStub(self.channel)
                 logger.info(f"Established gRPC connection to {self.host}:{self.port}")
         except Exception as e:

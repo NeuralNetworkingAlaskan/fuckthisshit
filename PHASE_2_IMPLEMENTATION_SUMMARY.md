@@ -308,7 +308,7 @@ print(f'Connected: {health[\"connected\"]}')
 
 ### Planned Improvements
 1. **Security Enhancements**
-   - TLS/SSL encryption for remote connections
+   - TLS/SSL encryption for remote connections *(implemented)*
    - Authentication and authorization
    - Rate limiting and DDoS protection
 

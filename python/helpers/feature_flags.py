@@ -43,3 +43,22 @@ class FeatureFlags:
     def should_fallback_to_local() -> bool:
         """Check if should fallback to local execution on IPC failure"""
         return os.environ.get('AGENT_ZERO_FALLBACK_LOCAL', 'true').lower() == 'true'
+    @staticmethod
+    def use_grpc_tls() -> bool:
+        """Check if TLS should be used for gRPC connections"""
+        return os.environ.get('AGENT_ZERO_GRPC_USE_TLS', 'false').lower() == 'true'
+
+    @staticmethod
+    def get_grpc_cert() -> str:
+        """Path to server TLS certificate"""
+        return os.environ.get('AGENT_ZERO_GRPC_CERT', '')
+
+    @staticmethod
+    def get_grpc_key() -> str:
+        """Path to server TLS key"""
+        return os.environ.get('AGENT_ZERO_GRPC_KEY', '')
+
+    @staticmethod
+    def get_grpc_root_cert() -> str:
+        """Path to client root CA certificate"""
+        return os.environ.get('AGENT_ZERO_GRPC_ROOT_CERT', '')
