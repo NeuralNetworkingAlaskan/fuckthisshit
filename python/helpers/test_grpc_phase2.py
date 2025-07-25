@@ -9,6 +9,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import pytest
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -24,6 +25,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@pytest.mark.asyncio
 async def test_grpc_server():
     """Test the gRPC server functionality"""
     logger.info("=== Testing gRPC Server ===")
@@ -123,6 +125,7 @@ def test_feature_flags():
     
     logger.info("Feature flags tests passed")
 
+@pytest.mark.asyncio
 async def test_grpc_client():
     """Test gRPC client functionality"""
     logger.info("=== Testing gRPC Client ===")
