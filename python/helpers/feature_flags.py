@@ -1,5 +1,7 @@
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
+from .feature_flag_client import FeatureFlagClient
 
 class FeatureFlags:
     """Centralized feature flag management for Agent Zero"""
@@ -12,6 +14,9 @@ class FeatureFlags:
     @staticmethod
     def use_grpc_ipc() -> bool:
         """Check if gRPC IPC should be used instead of RFC"""
+        remote = FeatureFlagClient.is_feature_enabled("use-grpc-ipc")
+        if remote is not None:
+            return remote
         return os.environ.get('AGENT_ZERO_USE_GRPC', 'false').lower() == 'true'
     
     @staticmethod
