@@ -5,6 +5,7 @@ Test script for Agent Zero Phase 2 gRPC implementation
 
 import asyncio
 import logging
+import pytest
 import os
 import sys
 import time
@@ -24,6 +25,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@pytest.mark.asyncio
 async def test_grpc_server():
     """Test the gRPC server functionality"""
     logger.info("=== Testing gRPC Server ===")
@@ -123,6 +125,7 @@ def test_feature_flags():
     
     logger.info("Feature flags tests passed")
 
+@pytest.mark.asyncio
 async def test_grpc_client():
     """Test gRPC client functionality"""
     logger.info("=== Testing gRPC Client ===")
