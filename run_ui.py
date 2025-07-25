@@ -260,4 +260,8 @@ def init_a0():
 if __name__ == "__main__":
     runtime.initialize()
     dotenv.load_dotenv()
+    
+    # Initialize native mode if enabled
+    initialize.initialize_native_mode()
+    
     run()

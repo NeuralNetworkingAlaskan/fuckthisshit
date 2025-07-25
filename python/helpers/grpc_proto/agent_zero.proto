@@ -1,0 +1,279 @@
+syntax = "proto3";
+
+package agent_zero;
+
+// Main Agent Zero gRPC service
+service AgentZeroService {
+    // Execute a function call
+    rpc ExecuteFunction(FunctionRequest) returns (FunctionResponse);
+    
+    // Execute a function call with streaming response
+    rpc ExecuteFunctionStream(FunctionRequest) returns (stream FunctionStreamResponse);
+    
+    // Handle RFC calls
+    rpc HandleRFC(RFCRequest) returns (RFCResponse);
+    
+    // File system operations
+    rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+    rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+    rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);
+    rpc ListDirectory(ListDirectoryRequest) returns (ListDirectoryResponse);
+    rpc FileExists(FileExistsRequest) returns (FileExistsResponse);
+    rpc CreateDirectory(CreateDirectoryRequest) returns (CreateDirectoryResponse);
+    rpc MoveFile(MoveFileRequest) returns (MoveFileResponse);
+    rpc CopyFile(CopyFileRequest) returns (CopyFileResponse);
+    
+    // System operations
+    rpc ExecuteCommand(CommandRequest) returns (CommandResponse);
+    rpc ExecuteCommandStream(CommandRequest) returns (stream CommandStreamResponse);
+    
+    // Health and monitoring
+    rpc GetHealth(HealthRequest) returns (HealthResponse);
+    rpc GetStatus(StatusRequest) returns (StatusResponse);
+    
+    // Utility operations
+    rpc Ping(PingRequest) returns (PingResponse);
+}
+
+// Function execution messages
+message FunctionRequest {
+    string function_name = 1;
+    string module_name = 2;
+    repeated FunctionArgument args = 3;
+    map<string, FunctionArgument> kwargs = 4;
+    bool is_async = 5;
+    int32 timeout_seconds = 6;
+    string execution_id = 7;
+}
+
+message FunctionArgument {
+    oneof value {
+        string string_value = 1;
+        int64 int_value = 2;
+        double float_value = 3;
+        bool bool_value = 4;
+        bytes bytes_value = 5;
+        string json_value = 6;  // For complex objects serialized as JSON
+    }
+}
+
+message FunctionResponse {
+    bool success = 1;
+    FunctionArgument result = 2;
+    string error_message = 3;
+    string error_type = 4;
+    string traceback = 5;
+    double execution_time = 6;
+    string execution_id = 7;
+}
+
+message FunctionStreamResponse {
+    string execution_id = 1;
+    oneof response_type {
+        string log_message = 2;
+        string progress_update = 3;
+        FunctionResponse final_result = 4;
+        string error_message = 5;
+    }
+}
+
+// RFC handling messages
+message RFCRequest {
+    string method = 1;
+    string path = 2;
+    map<string, string> headers = 3;
+    bytes body = 4;
+    string request_id = 5;
+}
+
+message RFCResponse {
+    int32 status_code = 1;
+    map<string, string> headers = 2;
+    bytes body = 3;
+    string request_id = 4;
+    bool success = 5;
+    string error_message = 6;
+}
+
+// File system operation messages
+message ReadFileRequest {
+    string file_path = 1;
+    bool binary_mode = 2;
+    string encoding = 3;
+    int64 max_size = 4;
+}
+
+message ReadFileResponse {
+    bool success = 1;
+    oneof content {
+        string text_content = 2;
+        bytes binary_content = 3;
+    }
+    string error_message = 4;
+    int64 file_size = 5;
+    string file_encoding = 6;
+}
+
+message WriteFileRequest {
+    string file_path = 1;
+    oneof content {
+        string text_content = 2;
+        bytes binary_content = 3;
+    }
+    bool create_directories = 4;
+    bool append_mode = 5;
+    string encoding = 6;
+}
+
+message WriteFileResponse {
+    bool success = 1;
+    string error_message = 2;
+    int64 bytes_written = 3;
+}
+
+message DeleteFileRequest {
+    string file_path = 1;
+    bool recursive = 2;  // For directories
+}
+
+message DeleteFileResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message ListDirectoryRequest {
+    string directory_path = 1;
+    bool recursive = 2;
+    bool include_hidden = 3;
+    repeated string file_patterns = 4;  // Glob patterns
+}
+
+message FileInfo {
+    string name = 1;
+    string path = 2;
+    bool is_directory = 3;
+    int64 size = 4;
+    int64 modified_time = 5;
+    string permissions = 6;
+}
+
+message ListDirectoryResponse {
+    bool success = 1;
+    repeated FileInfo files = 2;
+    string error_message = 3;
+}
+
+message FileExistsRequest {
+    string file_path = 1;
+}
+
+message FileExistsResponse {
+    bool exists = 1;
+    bool is_directory = 2;
+    bool is_file = 3;
+}
+
+message CreateDirectoryRequest {
+    string directory_path = 1;
+    bool create_parents = 2;
+}
+
+message CreateDirectoryResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message MoveFileRequest {
+    string source_path = 1;
+    string destination_path = 2;
+    bool overwrite = 3;
+}
+
+message MoveFileResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message CopyFileRequest {
+    string source_path = 1;
+    string destination_path = 2;
+    bool overwrite = 3;
+    bool recursive = 4;  // For directories
+}
+
+message CopyFileResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+// System command messages
+message CommandRequest {
+    string command = 1;
+    repeated string args = 2;
+    string working_directory = 3;
+    map<string, string> environment = 4;
+    int32 timeout_seconds = 5;
+    bool capture_output = 6;
+    string execution_id = 7;
+}
+
+message CommandResponse {
+    bool success = 1;
+    int32 exit_code = 2;
+    string stdout = 3;
+    string stderr = 4;
+    string error_message = 5;
+    double execution_time = 6;
+    string execution_id = 7;
+}
+
+message CommandStreamResponse {
+    string execution_id = 1;
+    oneof response_type {
+        string stdout_chunk = 2;
+        string stderr_chunk = 3;
+        CommandResponse final_result = 4;
+        string error_message = 5;
+    }
+}
+
+// Health and monitoring messages
+message HealthRequest {
+    bool detailed = 1;
+}
+
+message HealthResponse {
+    bool healthy = 1;
+    string status = 2;
+    map<string, string> details = 3;
+    double uptime_seconds = 4;
+    int64 memory_usage = 5;
+    double cpu_usage = 6;
+}
+
+message StatusRequest {
+    bool include_metrics = 1;
+}
+
+message StatusResponse {
+    string mode = 1;
+    bool connected = 2;
+    int64 total_requests = 3;
+    int64 successful_requests = 4;
+    int64 failed_requests = 5;
+    double average_response_time = 6;
+    map<string, string> configuration = 7;
+}
+
+// Utility messages
+message PingRequest {
+    string message = 1;
+    int64 timestamp = 2;
+}
+
+message PingResponse {
+    string message = 1;
+    int64 request_timestamp = 2;
+    int64 response_timestamp = 3;
+    double latency_ms = 4;
+}

@@ -1,7 +1,43 @@
 import models
+import logging
 from agent import AgentConfig
 from python.helpers import runtime, settings, defer
 from python.helpers.print_style import PrintStyle
+from python.helpers.feature_flags import FeatureFlags
+from python.helpers.ipc_factory import IPCFactory
+
+
+def initialize_native_mode():
+    """Initialize native mode configuration and logging"""
+    # Configure logging early for native mode
+    logging.basicConfig(
+        level=getattr(logging, FeatureFlags.get_log_level()),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    logger = logging.getLogger(__name__)
+    
+    if FeatureFlags.is_native_mode():
+        logger.info("🚀 Starting Agent Zero in NATIVE MODE")
+        logger.warning("⚠️  RFC functionality will be mocked - limited functionality expected")
+        logger.info("📝 File operations will execute locally")
+        
+        # Initialize IPC system early
+        try:
+            ipc = IPCFactory.get_ipc()
+            logger.info(f"✅ IPC initialized: {ipc.get_mode_name()}")
+            
+            # Log health status if debug mode is enabled
+            if FeatureFlags.is_debug_mode():
+                health = IPCFactory.get_health_status()
+                logger.debug(f"IPC Health Status: {health}")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize IPC: {e}")
+            logger.warning("Continuing with degraded functionality")
+    else:
+        logger.info("🐳 Starting Agent Zero in DOCKER MODE")
+        logger.info("🔗 RFC system will be used for development functions")
 
 
 def initialize_agent():
