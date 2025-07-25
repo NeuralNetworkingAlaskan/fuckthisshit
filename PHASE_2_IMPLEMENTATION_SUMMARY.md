@@ -273,6 +273,9 @@ python python/helpers/grpc_server.py
 export AGENT_ZERO_GRPC_HOST=localhost      # gRPC server host
 export AGENT_ZERO_GRPC_PORT=50051          # gRPC server port
 export AGENT_ZERO_IPC_TIMEOUT=30           # Request timeout in seconds
+export AGENT_ZERO_GRPC_CERT=server.crt     # TLS certificate (optional)
+export AGENT_ZERO_GRPC_KEY=server.key      # TLS key (optional)
+export AGENT_ZERO_GRPC_ROOT_CERT=root.crt  # Client root CA (optional)
 
 # Debug and Monitoring
 export AGENT_ZERO_DEBUG=true               # Enable debug logging

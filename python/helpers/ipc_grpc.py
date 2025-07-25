@@ -48,9 +48,38 @@ class GRPCAgentZeroIPC(AbstractAgentZeroIPC):
         
         try:
             if self.channel is None:
-                self.channel = grpc.aio.insecure_channel(f"{self.host}:{self.port}")
+                cert = FeatureFlags.get_grpc_cert()
+                key = FeatureFlags.get_grpc_key()
+                root_cert = FeatureFlags.get_grpc_root_cert()
+
+                if cert and key:
+                    with open(cert, 'rb') as f:
+                        certificate_chain = f.read()
+                    with open(key, 'rb') as f:
+                        private_key = f.read()
+                    root_bytes = None
+                    if root_cert:
+                        with open(root_cert, 'rb') as f:
+                            root_bytes = f.read()
+                    credentials = grpc.ssl_channel_credentials(
+                        root_certificates=root_bytes,
+                        private_key=private_key,
+                        certificate_chain=certificate_chain,
+                    )
+                    self.channel = grpc.aio.secure_channel(
+                        f"{self.host}:{self.port}", credentials
+                    )
+                    logger.info(
+                        f"Established secure gRPC connection to {self.host}:{self.port}"
+                    )
+                else:
+                    self.channel = grpc.aio.insecure_channel(
+                        f"{self.host}:{self.port}"
+                    )
+                    logger.info(
+                        f"Established insecure gRPC connection to {self.host}:{self.port}"
+                    )
                 self.stub = agent_zero_pb2_grpc.AgentZeroServiceStub(self.channel)
-                logger.info(f"Established gRPC connection to {self.host}:{self.port}")
         except Exception as e:
             logger.error(f"Failed to establish gRPC connection (attempt {self.connection_attempts}): {e}")
             self.channel = None
