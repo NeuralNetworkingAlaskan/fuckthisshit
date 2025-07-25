@@ -1,3 +1,10 @@
+from pathlib import Path
+import sys
+
+# Ensure the project root is on the import path so that "python" package can be
+# resolved correctly when running tests directly via ``pytest``.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from python.helpers.api import ApiHandler, Request, Response
 from python.helpers.backup import BackupService
 
