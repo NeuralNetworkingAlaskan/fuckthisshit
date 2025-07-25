@@ -9,7 +9,7 @@ This simplified diagram illustrates the hierarchical relationship between agents
 The user or Agent 0 is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and instruments) to perform its tasks.
 
 ## Runtime Architecture
-Agent Zero's runtime architecture is built around Docker containers:
+Agent Zero's original runtime relied entirely on Docker containers:
 
 1. **Host System (your machine)**:
    - Requires only Docker and a web browser
@@ -21,6 +21,12 @@ Agent Zero's runtime architecture is built around Docker containers:
    - Manages the Web UI and API endpoints
    - Handles all core functionalities including code execution
    - Provides a standardized environment across all platforms
+
+With the native IPC refactor, the framework can also run directly on Ubuntu.
+In this mode a gRPC server replaces the Docker RFC mechanism, enabling faster
+startup and easier development without containers. See
+[IPC Refactoring Framework](ipc_refactoring_framework.md) for an overview of the
+migration strategy.
 
 This architecture ensures:
 - Consistent environment across platforms
